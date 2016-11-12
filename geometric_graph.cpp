@@ -2,8 +2,17 @@
 #include <algorithm>
 #include <cmath>
 #include <cassert>
+#include <limits>
+#include <utility>
+#include <queue>
+
+#include <iostream>
 
 using std::vector;
+using std::pair;
+using std::priority_queue;
+
+const double M = std::numeric_limits<double>::max();
 
 struct Point2D {
   Point2D(double x, double y) : x(x), y(y) { }
@@ -27,13 +36,11 @@ struct NeighborInfo {
   vertex_id closest;
 };
 
-
 double dist(Point2D a, Point2D b) {
   double delta_x = a.x - b.x;
   double delta_y = a.y - b.y;
   return sqrt(delta_x*delta_x + delta_y*delta_y);
 }
-
 
 class GeometricGraph {
 public:
@@ -59,6 +66,88 @@ private:
   double eps;
   vector<Point2D> coords;
   vector<vector<HalfEdge> > adj;
+};
+
+typedef pair<double, vertex_id> weighted_vertex;
+
+class ShortestPaths {
+public:
+  ShortestPaths(const GeometricGraph &g, vertex_id start);
+  double dist(vertex_id end) const;
+  bool hasPath(vertex_id end) const;
+  vector<HalfEdge> pathTo(vertex_id end) const;
+private:
+  void initialize_queue(const GeometricGraph& g, vertex_id start);
+  void relax(vertex_id v, HalfEdge l);
+  priority_queue<weighted_vertex, vector<weighted_vertex>, std::greater<weighted_vertex> > pq;
+  vertex_id start;
+  vector<double> d;
+  vector<HalfEdge> pre;
+};
+
+void ShortestPaths::initialize_queue(const GeometricGraph &g, vertex_id start) {
+  pq.push(weighted_vertex(0.0,start));
+  for (vertex_id v = 0; v != g.V(); v++) {
+    if (v != start)
+      pq.push(weighted_vertex(M,v));
+  }
+}
+
+void ShortestPaths::relax(vertex_id v, HalfEdge l) {
+      vertex_id u = l.to;
+      double alt = d[v] + l.weight;
+      if (alt < d[u]) {
+	d[u] = alt;
+	pre[u] = HalfEdge(v,l.weight);
+	pq.push(weighted_vertex(alt,u));
+      }
+}
+
+// initializer lists??
+ShortestPaths::ShortestPaths(const GeometricGraph &g, vertex_id start) : start(start)  {
+  d = vector<double>(g.V(), M);
+  pre = vector<HalfEdge>(g.V(), HalfEdge(start,M));
+
+  vector<bool> visited(g.V(), false);
+  d[start] = 0.0;
+
+  initialize_queue(g, start);
+
+  while (!pq.empty()) {
+    weighted_vertex wv = pq.top();
+    pq.pop();
+    vertex_id v = std::get<1>(wv);
+    
+    if (visited[v])
+      continue;
+    visited[v] = true;
+    
+    auto links = g.links(v);
+    for (auto l = links.begin(); l != links.end(); l++) {
+      relax(v, *l);
+    }
+  }
+  
+};
+
+
+double ShortestPaths::dist(vertex_id end) const {
+  return d[end];
+}
+
+bool ShortestPaths::hasPath(vertex_id end) const {
+  return d[end] != std::numeric_limits<double>::max();
+};
+
+vector<HalfEdge> ShortestPaths::pathTo(vertex_id end) const {
+  vector<HalfEdge> path;
+  while (end != start) {
+    HalfEdge e = pre[end];
+    path.push_back(HalfEdge(end,e.weight));
+    end = e.to;
+  }
+  std::reverse(path.begin(), path.end());
+  return path;
 };
 
 vertex_id GeometricGraph::add_vertex(Point2D pos) {
@@ -135,6 +224,8 @@ vertex_id GeometricGraph::closest(Point2D p) const {
 };
 
 
+
+
 void GeometricGraphTests() {
   // empty graph
   GeometricGraph g(0.5);
@@ -200,8 +291,26 @@ void ClosestPointTests() {
 }
 
 
+void ShortestPathsTests() {
+  GeometricGraph g(1.01);
+  vertex_id u = g.add_vertex(Point2D(0,0));
+  vertex_id v = g.add_vertex(Point2D(1,0));
+  vertex_id w = g.add_vertex(Point2D(1,1));
+
+  assert(g.E() == 2);
+
+  ShortestPaths sp(g,u);
+
+  assert(sp.hasPath(u));
+  assert(sp.dist(u) == 0.0);
+  assert(sp.dist(v) == 1.0);
+  assert(sp.dist(w) == 2.0);
+};
+
+
 int main() {
   GeometricGraphTests();
   ClosestPointTests();
+  ShortestPathsTests();
   return 0;
 }
