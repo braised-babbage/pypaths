@@ -12,6 +12,8 @@ struct Point2D {
   double x, y;
 };
 
+double dist(Point2D a, Point2D b);
+
 bool operator ==(const Point2D a, const Point2D b);
 
 typedef int vertex_id;

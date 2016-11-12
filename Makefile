@@ -1,5 +1,5 @@
 CC=c++
-CFLAGS=-std=c++11
+CFLAGS=-std=c++11 -O3
 HEADERS = shortest_paths.hpp geometric_graph.hpp 
 
 %.o: %.cpp $(HEADERS)
