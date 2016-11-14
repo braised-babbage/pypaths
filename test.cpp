@@ -86,49 +86,18 @@ void ShortestPathsTests() {
   assert(sp.dist(v) == 1.0);
   assert(sp.dist(w) == 2.0);
 
+  auto path = sp.pathTo(w);
+  assert(path.size() == 2);
+  assert(path[0].to == v);
+  assert(path[1].to == w);
+
   g.shrink(0.5);
   ShortestPaths sp2(g,u);
   assert(sp2.hasPath(u));
   assert(!sp2.hasPath(v));
-  std::cout << sp2.dist(v) << std::endl;
+
 };
 
-double eps(int n) {
-  return 1.0 / pow(n, 0.4);
-};
-
-void RGG() {
-  std::uniform_real_distribution<double> unif(-0.5,0.5);
-  std::default_random_engine re;
-
-  int n = 5000;
-  int initial = 50;
-  int interval = 10;
-
-  Point2D pa(-0.25,0.25);
-  Point2D pb(0.25,0.25);
-  
-  GeometricGraph g(eps(initial));
-  
-  for (int i = 0; i < initial; i++) {
-    double x = unif(re);
-    double y = unif(re);
-    g.add_vertex(Point2D(x,y));
-  }
-  for (int i = initial; i < n; i++) {
-    double x = unif(re);
-    double y = unif(re);
-    g.add_vertex(Point2D(x,y));
-    if (i % interval == 0) {
-      g.shrink(eps(i));
-      vertex_id a = g.closest(pa);
-      vertex_id b = g.closest(pb);
-      ShortestPaths sp(g,a);
-      double d = sp.dist(b) + dist(g.position(a),pa) + dist(g.position(b),pb);
-      std::cout << "distance = " << d << std::endl;
-    }
-  }
-}
 
 
 int main() {
@@ -136,6 +105,6 @@ int main() {
   ClosestPointTests();
   ShortestPathsTests();
   std::cout << "Tests passed!" << std::endl;
-  RGG();
+  //RGG();
   return 0;
 }

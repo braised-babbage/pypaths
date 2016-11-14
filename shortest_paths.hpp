@@ -8,6 +8,8 @@
 
 typedef std::pair<double, vertex_id> weighted_vertex;
 
+const static double M = std::numeric_limits<double>::max();
+
 class ShortestPaths {
 public:
   ShortestPaths(const GeometricGraph &g, vertex_id start);

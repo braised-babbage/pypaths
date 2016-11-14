@@ -8,7 +8,6 @@
 
 using std::vector;
 
-const double M = std::numeric_limits<double>::max();
 
 void ShortestPaths::initialize_queue(const GeometricGraph &g, vertex_id start) {
   pq.push(weighted_vertex(0.0,start));

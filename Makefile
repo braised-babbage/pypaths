@@ -7,3 +7,6 @@ HEADERS = shortest_paths.hpp geometric_graph.hpp
 
 test: shortest_paths.o geometric_graph.o test.o
 	$(CC) -o test shortest_paths.o geometric_graph.o test.o
+
+growth: shortest_paths.o geometric_graph.o growth.o
+	$(CC) -o growth shortest_paths.o geometric_graph.o growth.o
