@@ -2,6 +2,7 @@
 #include <random>
 #include <iostream>
 #include <cassert>
+#include <vector>
 #include "geometric_graph.hpp"
 #include "shortest_paths.hpp"
 
@@ -9,13 +10,14 @@ using std::cout;
 using std::endl;
 using std::abs;
 using std::max;
+using std::vector;
+using std::ostream;
 
-const bool DUMP_INFO = true;
+const bool DUMP_INFO = false;
 
 
-double eps(int n) {
-  //return 1.0 / pow(n, 0.35);
-  return 2.0;
+double eps(int n, double exponent = 0.4) {
+  return 1.0 / pow(n, exponent);
 };
 
 class LineDistance {
@@ -38,6 +40,8 @@ private:
   double nx, ny;
   double c;
 };
+
+
 
 class PathStatistics {
 public:
@@ -120,8 +124,26 @@ void TestPathStatistics() {
 };
 
 
+class SimTable {
+public:
+  SimTable(int max_n)
+    : count(max_n+1,0), pathstats(max_n+1, vector<PathStatistics>())
+  { }
 
-void RGG(int n, int interval, int initial) {
+  void add_item(int n, PathStatistics& ps) {
+    // use exceptions
+    assert(ps.path_length() != M);
+    assert(ps.nn_distance() != M);
+    assert(ps.wander_distance() != M);
+    count[n] += 1;
+    pathstats[n].push_back(ps);
+  }
+
+  vector<int> count;
+  vector<vector<PathStatistics> > pathstats;
+};
+
+void RGG(int n, int interval, int initial, SimTable& st) {
   std::uniform_real_distribution<double> unif(-0.5,0.5);
   std::default_random_engine re;
   std::random_device rd;
@@ -141,6 +163,7 @@ void RGG(int n, int interval, int initial) {
       g.shrink(eps(i));
       PathStatistics ps(pa, pb, g);
 	if (ps.path_length() != M) {
+	  st.add_item(i, ps);
 	  if (DUMP_INFO) {
 	    std::cout << "i = " << i 
 		      << " distance = " << ps.path_length()
@@ -152,9 +175,38 @@ void RGG(int n, int interval, int initial) {
   }
 }
 
+void dump_table_at(ostream& out, SimTable& st, int n) {
+  out << "n = " << n << " eps_exponent = " << 0.4 << " iters = " << st.count[n] << endl;
+  out << "path_length nn_distance wander_distance" << endl;
+  for(auto it = st.pathstats[n].begin(); it != st.pathstats[n].end(); it++) {
+    out << it->path_length() << " " << it->nn_distance() << " " << it->wander_distance() << endl;
+  }
+  out << endl;
+}
+
+void dump_all(ostream& out, SimTable& st) {
+  //  out << "eps = " << 0.4 << endl;
+  out << "n,path_length,nn_distance,wander_distance" << endl;
+  for (int n = 0; n < st.count.size(); n++) {
+    if (st.count[n] == 0)
+      continue;
+
+    for (auto it = st.pathstats[n].begin(); it != st.pathstats[n].end(); it++) {
+      out << n << "," << it->path_length() << "," << it->nn_distance() << "," << it->wander_distance() << endl;
+    }
+  }
+};
+
 int main() {
   TestLineDistance();
   TestPathStatistics();
-  RGG(10000,10,50);
+  int max_n = 5000;
+  int iters = 5000;
+  SimTable st(max_n);
+  for(int i= 0; i < iters; i++)
+    RGG(max_n,10,50, st);
+  dump_all(cout, st);
+  //int n = max_n - 10;
+  //  dump_table_at(cout, st, n);
   return 0;
 }
