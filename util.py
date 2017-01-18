@@ -1,13 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
 import pandas as pd
+import scipy.spatial as sps
 
 
-## TODO: histogram from csv file
-## TODO: c++ export to csv for earlier experiment
+
 ## TODO: refactor c++
-## TODO: c++ export ball
-## TODO: python ball visualization
+## TODO: voronoi ball
 
 def load_trials(filename):
     f = open(filename,'r')
@@ -29,46 +29,66 @@ def load_trials(filename):
             pass
     return data
 
+def fit_powerlaw(df, x='n', y='path_length'):
+    # assume it has been appropriately preprocessed
+    slope,intercept = np.polyfit(np.log(df[x]),np.log(df[y]),1)
+    a = np.exp(intercept)
+    return a,slope
 
-def summary_stats(data):
-    table = dict()
-    for i,n in enumerate(data['n']):
-        n = int(n)
-        entry = (data['path_length'][i],
-                 data['nn_distance'][i],
-                 data['wander_distance'][i])
-        table[n] = table.get(n,[]) + [entry]
-    stats = dict()
-    for n in table.keys():
-        stats[n] = dict()
-        pl,nn,w = zip(*table[n])
-        stats[n]['path_length'] = np.mean(pl),np.var(pl)
-        stats[n]['nn_distance'] = np.mean(nn),np.var(nn)
-        stats[n]['wander_distance'] = np.mean(w),np.var(w)
-    return stats
-
-def plot_stats(stats, field='path_length'):
-    var_data = [(n,stats[n][field][1]) for n in stats.keys()]
-    xs,ys = zip(*sorted(var_data))
-    plt.plot(xs,ys)
-    plt.show()
-
-def plot_var(df,fieldname='path_length'):
-    # df = pd.read_csv(filename)
-    plt.semilogy(df.groupby('n').var()[fieldname])
-    plt.xlabel('n')
-    plt.ylabel('variance')
-    plt.title(fieldname)
-    plt.show()
+def plot_ball(df, n, filename=None):
+    fig = plt.figure(figsize=(10,10))
+    ax = fig.add_subplot(111,aspect='equal')
+    ax.set_axis_off();
+    ax.set_xlim(-0.5,0.5)
+    ax.set_ylim(-0.5,0.5)
+    
+    ball = df[df.n == n]
+    points = np.vstack([ball.x,ball.y]).T
+    vertices = points[sps.ConvexHull(points).vertices]
+    xs,ys = zip(*vertices)
+    poly = Polygon(vertices,closed=True,color="#2c75ea")
+    ax.add_patch(poly)
+    if filename is not None:
+        fig.savefig(filename)
+        fig.clf()
+    else:
+        fig.show()
 
         
+def all_balls(df,fileprefix=""):
+    ns = set(df.n)
+    for n in ns:
+        filename = fileprefix + ("%6d.png"%n)
+        plot_ball(df,n,filename=filename)
+
+def plot_var(df,fieldname='path_length',fit=False):
+    # df = pd.read_csv(filename)
+    df2 = df.groupby('n').var()
+    df2["n"] = df2.index
+    plt.loglog(df2.n,df2[fieldname])
+    title = fieldname
+    if fit:
+        a,e = fit_powerlaw(df2, y=fieldname)
+        fit_ys = [powerlaw(n,a,e) for n in df2.n]
+        plt.loglog(df2.n,fit_ys)
+        title += ' ~ $n^{%.3f}$' % e
+    plt.xlabel('n')
+    plt.ylabel('variance')
+    plt.title(title)
+    plt.show()
+
     
-def draw_hist(data,field, filename=None):
+def powerlaw(x,a,e):
+    return a*(x**e)
+
+    
+def draw_hist(data,n,field='path_length', filename=None):
+    # this uses the old file format
     plt.figure()
-    plt.hist(data[field], color="#2c75ea", bins=100, normed=1,alpha=0.5)
+    plt.hist(data[data.n == n][field], color="#2c75ea", bins=100, normed=1,alpha=0.5)
     plt.xlabel(field)
     plt.ylabel("probability density")
-    plt.title("$n = %d, \epsilon = n^{-%.2f}$" % (int(data["n"]), data["eps_exponent"]))
+    plt.title("$n = %d$" % n)
     if filename is not None:
         plt.savefig(filename)
     else:
