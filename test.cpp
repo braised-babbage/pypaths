@@ -1,9 +1,13 @@
 #include <cassert>
 #include <iostream>
 #include <random>
+#include <cmath>
 #include "geometric_graph.hpp"
 #include "shortest_paths.hpp"
+#include "statistics.hpp"
 
+using std::abs;
+using std::cout;
 using std::vector;
 
 void GeometricGraphTests() {
@@ -98,12 +102,77 @@ void ShortestPathsTests() {
 
 };
 
+void TestLineDistance() {
+  Point2D pa(0,0);
+  Point2D pb(1,0);
+  Point2D pc(0.5,0.5);
+  Point2D pd(0.5,-0.5);
 
+  double t = 0.00001;
+  LineDistance ld(pa,pb);
+
+  assert(abs(ld(pc) - 0.5) < t);
+  assert(abs(ld(pa) - 0) < t);
+  assert(abs(ld(pb) - 0) < t);
+  assert(abs(ld(pd) - 0.5) < t);
+
+  ld = LineDistance(pa,pc);
+  assert(abs(ld(pb) - 0.707107) < t);
+  assert(abs(ld(pd) - 0.707107) < t);
+}
+
+void TestPathStatistics() {
+  Point2D pa(0,0);
+  Point2D pb(1,0);
+  Point2D pc(1,1);
+  GeometricGraph g(1.1);
+  vertex_id a = g.add_vertex(pa);
+  vertex_id b = g.add_vertex(pb);
+  vertex_id c = g.add_vertex(pc);
+
+  Point2D u(-1,0);
+  Point2D v(2,1);
+
+  assert(g.closest(u) == a);
+  PathStatistics ps(u,v,g);
+  assert(ps.path_length() == 4.0);
+  assert(ps.num_hops() == 4);
+  double t = 0.0001;
+  assert(abs(ps.wander_distance() - 0.632456) < t);
+}
+
+void TestBallStatistics() {
+  Point2D pa(0,0);
+  Point2D pb(1,0);
+  Point2D pc(1,1);
+  GeometricGraph g(1.1);
+  vertex_id a = g.add_vertex(pa);
+  vertex_id b = g.add_vertex(pb);
+  vertex_id c = g.add_vertex(pc);
+
+  Point2D u(-1,0);
+  Point2D v(2,1);
+
+  BallStatistics bs(g,u,1.1);
+  vector<Point2D> ball = bs.ball();
+  assert(std::find(ball.begin(), ball.end(), pa) != ball.end());
+  assert(std::find(ball.begin(), ball.end(), pb) == ball.end());
+  assert(std::find(ball.begin(), ball.end(), pc) == ball.end());
+
+  BallStatistics bs2(g,u,2.1);
+  ball = bs2.ball();
+  assert(std::find(ball.begin(), ball.end(), pa) != ball.end());
+  assert(std::find(ball.begin(), ball.end(), pb) != ball.end());
+  assert(std::find(ball.begin(), ball.end(), pc) == ball.end());
+};
 
 int main() {
   GeometricGraphTests();
   ClosestPointTests();
   ShortestPathsTests();
+  TestLineDistance();
+  TestPathStatistics();
+  TestBallStatistics();
   std::cout << "Tests passed!" << std::endl;
   //RGG();
   return 0;

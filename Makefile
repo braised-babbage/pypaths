@@ -5,8 +5,8 @@ HEADERS = shortest_paths.hpp geometric_graph.hpp
 %.o: %.cpp $(HEADERS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-test: shortest_paths.o geometric_graph.o test.o
-	$(CC) -o test shortest_paths.o geometric_graph.o test.o
+test: shortest_paths.o geometric_graph.o statistics.o test.o
+	$(CC) -o test shortest_paths.o geometric_graph.o statistics.o test.o
 
-growth: shortest_paths.o geometric_graph.o growth.o
-	$(CC) -o growth shortest_paths.o geometric_graph.o growth.o
+growth: shortest_paths.o geometric_graph.o statistics.o growth.o
+	$(CC) -o growth shortest_paths.o geometric_graph.o statistics.o growth.o
