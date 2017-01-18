@@ -155,9 +155,9 @@ void dump_vertices(ostream& out, const GeometricGraph& g,
 
 
 int main() {
-  double eps_exp = 0.45;
-  int max_n = 1000;
-  int iters = 50;
+  double eps_exp = 0.4;
+  int max_n = 3000;
+  int iters = 100;
   Point2D pa(-0.25,-0.25);
   Point2D pb(0.25,0.25);
 
@@ -166,7 +166,8 @@ int main() {
   for(int i= 0; i < iters; i++)
     RGG(max_n,10,50,eps_exp,st);
 
-  cout << "max_n = " << max_n << " eps_exp = " << eps_exp
+  cout << "max_n = " << max_n << "iters = " << iters
+       <<" eps_exp = " << eps_exp
        << "from (" << pa.x << "," << pa.y << ")"
        << "to (" << pb.x << "," << pb.y << ")" << endl;
   st.dump_all(cout);

@@ -5,35 +5,18 @@ import pandas as pd
 import scipy.spatial as sps
 
 
-
-## TODO: refactor c++
 ## TODO: voronoi ball
 
 def load_trials(filename):
-    f = open(filename,'r')
-    data = dict()
-    header = f.readline().split()
-    i = 0
-    while i < len(header):
-        data[header[i]] = float(header[i+2])
-        i += 3
-    colnames = f.readline().split()
-    for name in colnames:
-        data[name] = []
-    for l in f:
-        entry = l.split()
-        try:
-            for i,name in enumerate(colnames):
-                data[name].append(float(entry[i]))
-        except:
-            pass
-    return data
+    return pd.read_csv(filename,header=1)
 
-def fit_powerlaw(df, x='n', y='path_length'):
+def fit_powerlaw(s):
     # assume it has been appropriately preprocessed
-    slope,intercept = np.polyfit(np.log(df[x]),np.log(df[y]),1)
+    slope,intercept = np.polyfit(np.log(s.index),np.log(s.values),1)
     a = np.exp(intercept)
     return a,slope
+
+
 
 def plot_ball(df, n, filename=None):
     fig = plt.figure(figsize=(10,10))
@@ -61,19 +44,28 @@ def all_balls(df,fileprefix=""):
         filename = fileprefix + ("%6d.png"%n)
         plot_ball(df,n,filename=filename)
 
-def plot_var(df,fieldname='path_length',fit=False):
-    # df = pd.read_csv(filename)
-    df2 = df.groupby('n').var()
-    df2["n"] = df2.index
-    plt.loglog(df2.n,df2[fieldname])
+def plot_means(df,fieldname='path_length',errorbars=False, fit=False):
+    plot = plt.plot
+    grouped = df.groupby('n')
+    series = grouped.mean()[fieldname]
+    plot(series.index,series.values,color='b',label='observed')
     title = fieldname
+    if errorbars:
+        counts = grouped.count()[fieldname]
+        stds = grouped.std()[fieldname]
+        lower = series - 2*stds/np.sqrt(counts)
+        upper = series + 2*stds/np.sqrt(counts)
+        plot(lower.index,lower.values,color='b',
+                 linestyle='--',alpha=0.5)
+        plot(upper.index,upper.values,color='b',
+                 linestyle='--',alpha=0.5)
     if fit:
-        a,e = fit_powerlaw(df2, y=fieldname)
-        fit_ys = [powerlaw(n,a,e) for n in df2.n]
-        plt.loglog(df2.n,fit_ys)
-        title += ' ~ $n^{%.3f}$' % e
+        a,e = fit_powerlaw(series)
+        plot(series.index, a*(series.index**e),color='g', label='fit')
+        title += r'$\approx {%.3f}n^{%.3f}$' % (a,e)
+        plt.legend(loc='upper left', frameon=False)
     plt.xlabel('n')
-    plt.ylabel('variance')
+    plt.ylabel('mean {}'.format(fieldname))
     plt.title(title)
     plt.show()
 
