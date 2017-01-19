@@ -9,14 +9,11 @@
 
 
 struct Point {
-  Point() {
-    coords.push_back(0);
-    coords.push_back(0);
+  Point(std::initializer_list<double> l) : coords(l) {
   }
-  Point(double x, double y)
-  {
-    coords.push_back(x);
-    coords.push_back(y);
+  Point(int n) {
+    for (int i = 0; i < n; i++)
+      coords.push_back(0);
   }
   inline double operator[](int i) const { return coords[i]; }
   inline double operator[](int i) { return coords[i]; }

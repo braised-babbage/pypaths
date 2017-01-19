@@ -19,22 +19,27 @@ double eps(int n, double exponent) {
   return 1.0 / pow(n, exponent);
 };
 
+uniform_real_distribution<double> unif(-0.5,0.5);
+default_random_engine re;
+random_device rd;
 
+
+Point random_point() {
+  double x = unif(re);
+  double y = unif(re);
+
+  return Point {x,y};
+}
 
 
 void RGG(int n, int interval, int initial, double exponent,
 	 StatsHandler& sh) {
-  std::uniform_real_distribution<double> unif(-0.5,0.5);
-  std::default_random_engine re;
-  std::random_device rd;
-  re.seed(rd());
-  
   GeometricGraph g(eps(initial,exponent));
  
   for (int i = 0; i <= n; i++) {
-    double x = unif(re);
-    double y = unif(re);
-    g.add_vertex(Point(x,y));
+    Point p = random_point();
+    cout << p << endl;
+    g.add_vertex(p);
     
     if (i > initial && i % interval == 0) {
       g.shrink(eps(i,exponent));
@@ -68,10 +73,10 @@ void RGG(int n, int interval, int initial, double exponent,
 
 int main() {
   double eps_exp = 0.4;
-  int max_n = 1000;
+  int max_n = 300;
   int iters = 10;
-  Point pa(-0.25,-0.25);
-  Point pb(0.25,0.25);
+  Point pa {-0.25,-0.25};
+  Point pb {0.25,0.25};
 
   SimTable st(max_n,pa,pb);
   //  BallTracker bt(Point(0,0),0.25);

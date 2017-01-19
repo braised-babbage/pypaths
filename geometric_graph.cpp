@@ -17,11 +17,11 @@ bool operator ==(const Point a, const Point b) {
 }
 
 Point operator *(const Point a, double b) {
-  return Point(a[0]*b,a[1]*b);
+  return Point {a[0]*b,a[1]*b};
 }
 
 Point operator -(const Point a, const Point b) {
-  return Point(a[0] - b[0], a[1] - b[1]);
+  return Point {a[0] - b[0], a[1] - b[1]};
 }
 
 double dot(Point a, Point b) {

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-LineDistance::LineDistance(Point a, Point b)   {
+LineDistance::LineDistance(Point a, Point b) : o(2), v(2)  {
     double d = dist(a,b);
     o = a;
     v = b-o;

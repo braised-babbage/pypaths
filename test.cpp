@@ -18,7 +18,7 @@ void GeometricGraphTests() {
   assert(g.E() == 0);
 
   
-  Point p(0,0);
+  Point p {0,0};
   vertex_id v = g.add_vertex(p);
   assert(v == 0);
   assert(g.V() == 1);
@@ -26,7 +26,7 @@ void GeometricGraphTests() {
   assert(g.position(v) == p);
 
   // add a neighboring point
-  vertex_id u = g.add_vertex(Point(0.1,0.1));
+  vertex_id u = g.add_vertex(Point {0.1, 0.1});
   assert(u == 1);
   assert(g.V() == 2);
   assert(g.E() == 1);
@@ -38,7 +38,7 @@ void GeometricGraphTests() {
   assert(out.weight == 0.1*sqrt(2.0));
 
   // add an isolated point
-  vertex_id w = g.add_vertex(Point(1.0,1.0));
+  vertex_id w = g.add_vertex(Point {1.0,1.0} );
   assert(w == 2);
   assert(g.V() == 3);
   assert(g.E() == 1);
@@ -47,7 +47,7 @@ void GeometricGraphTests() {
   assert(g.links(2).size() == 0);
 
   // shrink the graph
-  vertex_id w2 = g.add_vertex(Point(-0.49,0.0));
+  vertex_id w2 = g.add_vertex(Point {-0.49,0.0});
   assert(w2 == 3);
   assert(g.links(0).size() == 2);
   assert(g.links(3).size() == 1);
@@ -64,22 +64,22 @@ void ClosestPointTests() {
   GeometricGraph g(1.0);
   vertex_id u,v,w;
 
-  u = g.add_vertex(Point(0,0));
-  v = g.add_vertex(Point(1,0));
-  w = g.add_vertex(Point(1,1));
+  u = g.add_vertex(Point {0,0});
+  v = g.add_vertex(Point {1,0});
+  w = g.add_vertex(Point {1,1});
 
-  assert(g.closest(Point(0,0)) == u);
-  assert(g.closest(Point(0.1,0)) == u);
-  assert(g.closest(Point(1.1,0.9)) == w);
+  assert(g.closest(Point {0,0}) == u);
+  assert(g.closest(Point {0.1,0}) == u);
+  assert(g.closest(Point {1.1,0.9}) == w);
 
 }
 
 
 void ShortestPathsTests() {
   GeometricGraph g(1.01);
-  vertex_id u = g.add_vertex(Point(0,0));
-  vertex_id v = g.add_vertex(Point(1,0));
-  vertex_id w = g.add_vertex(Point(1,1));
+  vertex_id u = g.add_vertex(Point {0,0} );
+  vertex_id v = g.add_vertex(Point {1,0} );
+  vertex_id w = g.add_vertex(Point {1,1} );
 
   assert(g.E() == 2);
 
@@ -103,10 +103,10 @@ void ShortestPathsTests() {
 };
 
 void TestLineDistance() {
-  Point pa(0,0);
-  Point pb(1,0);
-  Point pc(0.5,0.5);
-  Point pd(0.5,-0.5);
+  Point pa {0,0};
+  Point pb {1,0};
+  Point pc {0.5,0.5};
+  Point pd {0.5,-0.5};
 
   double t = 0.00001;
   LineDistance ld(pa,pb);
@@ -122,16 +122,16 @@ void TestLineDistance() {
 }
 
 void TestPathStatistics() {
-  Point pa(0,0);
-  Point pb(1,0);
-  Point pc(1,1);
+  Point pa {0,0};
+  Point pb {1,0};
+  Point pc {1,1};
   GeometricGraph g(1.1);
   vertex_id a = g.add_vertex(pa);
   vertex_id b = g.add_vertex(pb);
   vertex_id c = g.add_vertex(pc);
 
-  Point u(-1,0);
-  Point v(2,1);
+  Point u {-1,0};
+  Point v {2,1};
 
   assert(g.closest(u) == a);
   PathStatistics ps(u,v,g);
@@ -142,16 +142,16 @@ void TestPathStatistics() {
 }
 
 void TestBallStatistics() {
-  Point pa(0,0);
-  Point pb(1,0);
-  Point pc(1,1);
+  Point pa {0,0};
+  Point pb {1,0};
+  Point pc {1,1};
   GeometricGraph g(1.1);
   vertex_id a = g.add_vertex(pa);
   vertex_id b = g.add_vertex(pb);
   vertex_id c = g.add_vertex(pc);
 
-  Point u(-1,0);
-  Point v(2,1);
+  Point u {-1,0};
+  Point v {2,1};
 
   BallStatistics bs(g,u,1.1);
   vector<Point> ball = bs.ball();
