@@ -5,16 +5,38 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 
-struct Point2D {
-  Point2D(double x, double y) : x(x), y(y) { }
-  double x, y;
+struct Point {
+  Point() {
+    coords.push_back(0);
+    coords.push_back(0);
+  }
+  Point(double x, double y)
+  {
+    coords.push_back(x);
+    coords.push_back(y);
+  }
+  inline double operator[](int i) const { return coords[i]; }
+  inline double operator[](int i) { return coords[i]; }
+  friend std::ostream& operator<< (std::ostream& stream, const Point& point);
+  double norm() const;
+  std::vector<double> coords;
 };
 
-double dist(Point2D a, Point2D b);
 
-bool operator ==(const Point2D a, const Point2D b);
+Point diff(Point a, Point b);
+
+double dot(Point a, Point b);
+
+
+double dist(Point a, Point b);
+
+bool operator ==(const Point a, const Point b);
+Point operator *(const Point a, double b);
+Point operator -(const Point a, const Point b);
+
 
 typedef int vertex_id;
 
@@ -25,7 +47,7 @@ struct HalfEdge {
 };
 
 struct NeighborInfo {
-  Point2D pos;
+  Point pos;
   vertex_id closest;
 };
 
@@ -35,23 +57,23 @@ public:
     : nverts(0), nedges(0), eps(eps) { }
 
 
-  vertex_id add_vertex(Point2D);
+  vertex_id add_vertex(Point);
 
   int V() const { return nverts; }
   int E() const { return nedges; }
   double Eps() const { return eps; }
 
-  Point2D position(vertex_id v) const;
+  Point position(vertex_id v) const;
   const std::vector<HalfEdge> links(vertex_id v) const;
 
-  vertex_id closest(Point2D pos) const;
+  vertex_id closest(Point pos) const;
   
   void shrink(double new_eps);
 
 private:
   int nverts, nedges;
   double eps;
-  std::vector<Point2D> coords;
+  std::vector<Point> coords;
   std::vector<std::vector<HalfEdge> > adj;
 };
 

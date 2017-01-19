@@ -3,29 +3,47 @@
 #include <limits>
 #include <utility>
 #include <queue>
+#include <iostream>
 
 #include "geometric_graph.hpp"
 #include "shortest_paths.hpp"
 
-#include <iostream>
+
 
 using std::vector;
 
-bool operator ==(const Point2D a, const Point2D b) {
-  return a.x == b.x && a.y == b.y;
+bool operator ==(const Point a, const Point b) {
+  return a[0] == b[0] && a[1] == b[1];
+}
+
+Point operator *(const Point a, double b) {
+  return Point(a[0]*b,a[1]*b);
+}
+
+Point operator -(const Point a, const Point b) {
+  return Point(a[0] - b[0], a[1] - b[1]);
+}
+
+double dot(Point a, Point b) {
+  return a[0]*b[0] + a[1]*b[1];
+}
+
+double Point::norm() const
+{ return sqrt(dot(*this,*this)); }
+
+double dist(Point a, Point b) {
+  return (a-b).norm();
+}
+
+std::ostream& operator<< (std::ostream& stream, const Point& p) {
+  stream << p[0] << "," << p[1];
+  return stream;
 }
 
 
-double dist(Point2D a, Point2D b) {
-  double delta_x = a.x - b.x;
-  double delta_y = a.y - b.y;
-  return sqrt(delta_x*delta_x + delta_y*delta_y);
-}
 
 
-
-
-vertex_id GeometricGraph::add_vertex(Point2D pos) {
+vertex_id GeometricGraph::add_vertex(Point pos) {
   // nverts == coords.size() == adj.size()
   vertex_id id = nverts;
 
@@ -56,7 +74,7 @@ const vector<HalfEdge> GeometricGraph::links(vertex_id v) const {
   return adj[v];
 };
 
-Point2D GeometricGraph::position(vertex_id v) const {
+Point GeometricGraph::position(vertex_id v) const {
   return coords[v];
 };
 
@@ -80,7 +98,7 @@ void GeometricGraph::shrink(double new_eps) {
   nedges = num_edges/2;
 };
 
-vertex_id GeometricGraph::closest(Point2D p) const {
+vertex_id GeometricGraph::closest(Point p) const {
   // todo: track points
   if(nverts == 0)
     return -1;
