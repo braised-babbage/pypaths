@@ -4,6 +4,7 @@
 #include <cassert>
 #include <algorithm>
 #include <vector>
+#include <tclap/CmdLine.h>
 #include "geometric_graph.hpp"
 #include "shortest_paths.hpp"
 #include "statistics.hpp"
@@ -13,7 +14,6 @@ using namespace std;
 
 const bool DUMP_INFO = false;
 const bool DUMP_BALL = false;
-const int DIM = 3;
 
 
 double eps(int n, double exponent) {
@@ -24,31 +24,31 @@ uniform_real_distribution<double> unif(-0.5,0.5);
 default_random_engine re;
 random_device rd;
 
-Point equal_coords(double c) {
+Point equal_coords(int d, double c) {
   Point p(0);
-  for (int i = 0; i < DIM; i++) {
+  for (int i = 0; i < d; i++) {
     p.coords.push_back(c);
   }
   return p;
 }
 
 
-Point random_point() {
+Point random_point(int d) {
   // TODO: move this? it looks under the hood...
   Point p(0);
-  for (int i = 0; i < DIM; i++) {
+  for (int i = 0; i < d; i++) {
     p.coords.push_back(unif(re));
   }
   return p;
 }
 
 
-void RGG(int n, int interval, int initial, double exponent,
+void RGG(int d, int n, int interval, int initial, double exponent,
 	 StatsHandler& sh) {
   GeometricGraph g(eps(initial,exponent));
  
   for (int i = 0; i <= n; i++) {
-    Point p = random_point();
+    Point p = random_point(d);
     g.add_vertex(p);
     
     if (i > initial && i % interval == 0) {
@@ -78,20 +78,15 @@ void RGG(int n, int interval, int initial, double exponent,
 // }
 
 
-
-
-
-int main() {
-  double eps_exp = 0.25;
-  int max_n = 300;
-  int iters = 10;
-  Point pa = equal_coords(-0.25);
-  Point pb = equal_coords(0.25);
-
+void run_simulation(double eps_exp, int iters, int d,
+		    int start_n, int max_n, int step) {
+  Point pa = equal_coords(d,-0.25);
+  Point pb = equal_coords(d, 0.25);
+  
   SimTable st(max_n,pa,pb);
   //  BallTracker bt(Point(0,0),0.25);
   for(int i= 0; i < iters; i++)
-    RGG(max_n,10,50,eps_exp,st);
+    RGG(d, max_n,step,start_n,eps_exp,st);
 
   cout << "max_n = " << max_n << " iters = " << iters
        <<" eps_exp = " << eps_exp
@@ -99,9 +94,32 @@ int main() {
        << " to " << pb << endl;
   st.dump_all(cout);
 
-  
-  //int n = max_n - 10;
-  //  dump_table_at(cout, st, n);
+}
+
+
+
+int main(int argc, char** argv) {
+  try {
+    TCLAP::CmdLine cmd("RGG Growth Sim", ' ', "0.1");
+    TCLAP::ValueArg<int> d("d", "dim", "dimension", false, 2, "int");
+    cmd.add(d);
+    TCLAP::ValueArg<double> exp("e", "exp", "Epsilon Exponent",
+				true, 0.0, "double");
+    cmd.add(exp);
+    TCLAP::ValueArg<int> max("n", "max", "Max n", true, 0, "int");
+    cmd.add(max);
+    TCLAP::ValueArg<int> start("s", "start", "Starting n", true, 0, "int");
+    cmd.add(start);
+    TCLAP::ValueArg<int> step("z", "stepsize", "Step Size (n)", false,10,"int");
+    cmd.add(step);
+    TCLAP::ValueArg<int> iters("i", "iters", "Iterations", false, 10,"int");
+    cmd.add(iters);
+    cmd.parse(argc, argv);
+
+    run_simulation(exp.getValue(), iters.getValue(), d.getValue(),
+		   start.getValue(), max.getValue(), step.getValue());
+  } catch (TCLAP::ArgException &e)  // catch any exceptions
+	{ cerr << "error: " << e.error() << " for arg " << e.argId() << endl; } 
   return 0;
 }
 
