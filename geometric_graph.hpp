@@ -17,6 +17,7 @@ struct Point {
   }
   inline double operator[](int i) const { return coords[i]; }
   inline double operator[](int i) { return coords[i]; }
+  inline int dims() const { return coords.size(); }
   friend std::ostream& operator<< (std::ostream& stream, const Point& point);
   double norm() const;
   std::vector<double> coords;

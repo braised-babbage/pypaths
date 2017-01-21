@@ -13,19 +13,31 @@
 using std::vector;
 
 bool operator ==(const Point a, const Point b) {
-  return a[0] == b[0] && a[1] == b[1];
+  return a.coords == b.coords;
 }
 
 Point operator *(const Point a, double b) {
-  return Point {a[0]*b,a[1]*b};
+  Point p(0);
+  for (int i = 0; i < a.dims(); i++) {
+    p.coords.push_back(a[i]*b);
+  }
+  return p;
 }
 
 Point operator -(const Point a, const Point b) {
-  return Point {a[0] - b[0], a[1] - b[1]};
+  Point p(0);
+  for (int i = 0; i < a.dims(); i++) {
+    p.coords.push_back(a[i] - b[i]);
+  }
+  return p;
 }
 
 double dot(Point a, Point b) {
-  return a[0]*b[0] + a[1]*b[1];
+  double t = 0.0;
+  for (int i = 0; i < a.dims(); i++) {
+    t += a[i]*b[i];
+  }
+  return t;
 }
 
 double Point::norm() const
@@ -36,7 +48,9 @@ double dist(Point a, Point b) {
 }
 
 std::ostream& operator<< (std::ostream& stream, const Point& p) {
-  stream << p[0] << "," << p[1];
+  stream << p[0];
+  for (int i = 1; i < p.dims(); i++)
+    stream << "," << p[i];
   return stream;
 }
 
