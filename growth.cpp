@@ -82,7 +82,7 @@ void RGG(int n, int interval, int initial, double exponent,
 
 
 int main() {
-  double eps_exp = 0.4;
+  double eps_exp = 0.25;
   int max_n = 300;
   int iters = 10;
   Point pa = equal_coords(-0.25);

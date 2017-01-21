@@ -74,6 +74,18 @@ void ClosestPointTests() {
 
 }
 
+void Point3DTests() {
+  auto u = Point {0,0,2};
+  auto v = Point {1,0,1};
+
+  assert(u == (Point {0,0,2}));
+  assert(u.norm() == 2.0);
+  assert(dot(u,v) == 2.0);
+  assert(v-u == (Point {1,0,-1}));
+  assert(v*2.0 == (Point {2,0,2}));
+
+};
+
 
 void ShortestPathsTests() {
   GeometricGraph g(1.01);
@@ -167,6 +179,7 @@ void TestBallStatistics() {
 };
 
 int main() {
+  Point3DTests();
   GeometricGraphTests();
   ClosestPointTests();
   ShortestPathsTests();
