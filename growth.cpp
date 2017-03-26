@@ -44,9 +44,11 @@ Point random_point(int d) {
 
 
 void RGG(int d, int n, int interval, int initial, double exponent,
-	 StatsHandler& sh) {
+	 vector<Point> starting, StatsHandler& sh) {
   GeometricGraph g(eps(initial,exponent));
- 
+  for (auto it = starting.begin(); it != starting.end(); it++) {
+    g.add_vertex(*it);
+  }
   for (int i = 0; i <= n; i++) {
     Point p = random_point(d);
     g.add_vertex(p);
@@ -82,16 +84,14 @@ void run_simulation(double eps_exp, int iters, int d,
 		    int start_n, int max_n, int step) {
   Point pa = equal_coords(d,-0.25);
   Point pb = equal_coords(d, 0.25);
+  vector<Point> starting;
+  starting.push_back(pa); starting.push_back(pb);
   
   SimTable st(max_n,pa,pb);
   //  BallTracker bt(Point(0,0),0.25);
   for(int i= 0; i < iters; i++)
-    RGG(d, max_n,step,start_n,eps_exp,st);
-
-  cout << "max_n = " << max_n << " iters = " << iters
-       <<" eps_exp = " << eps_exp
-       << " from " << pa
-       << " to " << pb << endl;
+    RGG(d,max_n,step,start_n,eps_exp,starting,st);
+  
   st.dump_all(cout);
 
 }
@@ -102,20 +102,23 @@ int main(int argc, char** argv) {
   try {
     TCLAP::CmdLine cmd("RGG Growth Sim", ' ', "0.1");
     TCLAP::ValueArg<int> d("d", "dim", "dimension", false, 2, "int");
-    cmd.add(d);
     TCLAP::ValueArg<double> exp("e", "exp", "Epsilon Exponent",
 				true, 0.0, "double");
-    cmd.add(exp);
     TCLAP::ValueArg<int> max("n", "max", "Max n", true, 0, "int");
-    cmd.add(max);
     TCLAP::ValueArg<int> start("s", "start", "Starting n", true, 0, "int");
-    cmd.add(start);
     TCLAP::ValueArg<int> step("z", "stepsize", "Step Size (n)", false,10,"int");
-    cmd.add(step);
     TCLAP::ValueArg<int> iters("i", "iters", "Iterations", false, 10,"int");
-    cmd.add(iters);
+    cmd.add(iters);  cmd.add(step);  cmd.add(start);
+    cmd.add(max);    cmd.add(exp);   cmd.add(d);
     cmd.parse(argc, argv);
 
+    cout << "growth --dim " << d.getValue()
+	 << " --exp " << exp.getValue()
+	 << " --max " << max.getValue()
+	 << " --start " << start.getValue()
+	 << " --stepsize " << step.getValue()
+	 << " --iters " << iters.getValue()
+	 << endl;
     run_simulation(exp.getValue(), iters.getValue(), d.getValue(),
 		   start.getValue(), max.getValue(), step.getValue());
   } catch (TCLAP::ArgException &e)  // catch any exceptions
